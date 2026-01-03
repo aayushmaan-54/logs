@@ -1,0 +1,44 @@
+---
+import { SITE } from '@/site.config';
+import getUniqueTags from '@/utils/getUniqueTags';
+import type { GetStaticPathsOptions } from 'astro';
+import { getCollection } from 'astro:content';
+import getPostsByTag from '@/utils/getPostsByTag';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ContentLayout from '@/layouts/ContentLayout.astro';
+import PostLink from '@/components/PostLink.astro';
+import Pagination from '@/components/Pagination.astro';
+
+export async function getStaticPaths({ paginate }: GetStaticPathsOptions) {
+  const posts = await getCollection('blog');
+  const tags = getUniqueTags(posts);
+
+  return tags.flatMap(({ tag, tagName }) => {
+    const tagPosts = getPostsByTag(posts, tag);
+
+    return paginate(tagPosts, {
+      params: { tag },
+      props: { tagName },
+      pageSize: SITE.postPerPage,
+    });
+  });
+}
+
+const params = Astro.params;
+const { tag } = params;
+const { page, tagName } = Astro.props;
+---
+
+<BaseLayout title={`tags / ${tagName}`}>
+  <ContentLayout
+    pageTitle={[`Tag:`, `${tagName}`]}
+    titleTransition={`tag-${tag}`}
+    pageDesc={`All the articles with the tag "${tagName}".`}
+  >
+    <ul>
+      {page.data.map(data => <PostLink {...data} variant='h3' />)}
+    </ul>
+  </ContentLayout>
+
+  <Pagination {page} />
+</BaseLayout>

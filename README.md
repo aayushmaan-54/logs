@@ -1,43 +1,42 @@
-# Astro Starter Kit: Minimal
+# ToDo:
 
-```sh
-npm create astro@latest -- --template minimal
+- use <Image> astro compoenet in mdx blogs we render
+- whole subscribe service (build time trigger if new post detected during new deploymeent email is sent)
+
+```bash
+"scripts": {
+    "copy:pagefind:dev": "npx shx cp -r dist/pagefind public/",
+    "build:astro": "astro build",
+    "build:pagefind": "npx pagefind",
+    "build": "npm-run-all -s build:astro build:pagefind"
+}
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+This will build the pagefind search index whenever you build your site. But, what about dev mode? Astro won't access files from your dist folder in dev mode, so you need to copy the pagefind files from the dist folder into your public directory (got the idea from this post) which is used for static files.
 
-## 🚀 Project Structure
+So, you can build the pagefind index, copy it from the dist to public directory and then run astro dev. This way you can get the latest search index but, it still won't change on hot reload (this is a limitation).
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```bash
+"scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build && pagefind --site dist && cp -r dist/pagefind public/",
+    "preview": "astro preview",
+    "sync": "astro sync",
+    "astro": "astro",
+    "format:check": "prettier --check .",
+    "format": "prettier --write .",
+    "lint": "eslint ."
+  }
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+```jsx
+Global mdx components
+// src/mdx-components.ts
+import Callout from "./components/Callout.astro";
+import CodeBlock from "./components/CodeBlock.astro";
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+export const mdxComponents = {
+  Callout,
+  CodeBlock,
+};
+```

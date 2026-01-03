@@ -1,0 +1,52 @@
+---
+import { slugifyStr } from '@/utils/slugify';
+import type { CollectionEntry } from 'astro:content';
+import { getBlogPostPath } from '@/utils/getPostPath';
+import PostMeta from './PostMeta.astro';
+import Tag from './Tag.astro';
+
+export interface Props extends CollectionEntry<'blog'> {
+  variant?: 'h2' | 'h3';
+  body?: string;
+}
+
+const { variant = 'h2', data, id, filePath, body } = Astro.props;
+
+const { title, description, tags, pubDatetime, modDatetime, timezone } = data;
+
+const headerPropsBaseClass = 'leading-tight tracking-tight';
+const transitionName = slugifyStr(title);
+---
+
+<li class='my-8 mt-6 mb-16'>
+  {
+    variant === 'h2' ? (
+      <h2 class:list={[headerPropsBaseClass, 'mb-2 text-3xl font-bold']}>
+        <a
+          href={getBlogPostPath(id, filePath)}
+          class:list={[
+            'transition-colors hover:text-foreground-primary/90 focus-visible:no-underline focus-visible:underline-offset-0',
+          ]}
+        >
+          <span transition:name={transitionName}>{title}</span>
+        </a>
+      </h2>
+    ) : (
+      <h3 class:list={[headerPropsBaseClass, 'mb-2 text-xl font-medium']}>
+        <a
+          href={getBlogPostPath(id, filePath)}
+          class:list={[
+            'decoration-1 underline-offset-4 hover:underline focus-visible:no-underline focus-visible:underline-offset-0',
+          ]}
+        >
+          <span transition:name={transitionName}>{title}</span>
+        </a>
+      </h3>
+    )
+  }
+  <PostMeta {pubDatetime} {modDatetime} {timezone} text={body || ''} />
+  <ul class='mb-1'>
+    {tags.map(tag => <Tag tag={slugifyStr(tag)} tagName={tag} />)}
+  </ul>
+  <p class='text-foreground-muted'>{description}</p>
+</li>

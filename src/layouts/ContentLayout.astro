@@ -1,0 +1,51 @@
+---
+import { SITE } from '@/site.config';
+
+interface StringTitleProp {
+  pageTitle: string;
+}
+
+interface ArrayTitleProp {
+  pageTitle: [string, string];
+  titleTransition: string;
+}
+
+export type Props = StringTitleProp | ArrayTitleProp;
+
+const { props } = Astro;
+
+const backUrl = SITE.showBackButton ? Astro.url.pathname : '/';
+const STORAGE_KEY_BACK_URL = SITE.browserStorage.backUrl;
+---
+
+<main
+  data-back-url={backUrl}
+  id='main-content'
+  class='mx-auto mb-4 w-full max-w-app'
+>
+  {
+    'titleTransition' in props ? (
+      <h1 class='text-3xl font-semibold tracking-tight sm:text-3xl'>
+        {props.pageTitle[0]}{' '}
+        <span transition:name={props.titleTransition}>
+          {props.pageTitle[1]}
+        </span>
+      </h1>
+    ) : (
+      <h1 class='text-2xl font-semibold sm:text-3xl'>{props.pageTitle}</h1>
+    )
+  }
+  <slot />
+</main>
+
+<script is:inline define:vars={{ STORAGE_KEY_BACK_URL }}>
+  document.addEventListener('astro:page-load', () => {
+    const mainContent = document.querySelector('#main-content');
+    const backUrl = mainContent?.dataset?.backUrl;
+    if (backUrl) {
+      sessionStorage.setItem(STORAGE_KEY_BACK_URL, backUrl);
+      // Dispatch custom event to notify BackButton
+      document.dispatchEvent(new CustomEvent('backUrlUpdated'));
+    }
+  });
+</script>

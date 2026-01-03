@@ -1,16 +1,59 @@
 ---
+import PostLink from '@/components/PostLink.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE } from '@/site.config';
+import getSortedPosts from '@/utils/getSortedPosts';
+import { getCollection } from 'astro:content';
 
+const posts = await getCollection('blog');
+
+const sortedPosts = getSortedPosts(posts);
+const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
+const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
+
+const STORAGE_KEY_BACK_URL = SITE.browserStorage.backUrl;
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title='home'>
+  {
+    featuredPosts.length > 0 && (
+      <>
+        <section id='featured' class='space-y-12'>
+          <h2 class='mb-4 text-3xl font-semibold tracking-tight'>Featured</h2>
+          <ul>
+            {featuredPosts.map(data => (
+              <PostLink variant='h3' {...data} />
+            ))}
+          </ul>
+        </section>
+      </>
+    )
+  }
+
+  {
+    recentPosts.length > 0 && (
+      <section id='recent-posts' class='pb-6'>
+        <h2 class='mb-4 text-3xl font-semibold tracking-tight'>
+          Recent Writings
+        </h2>
+        <ul>
+          {recentPosts.map(
+            (data, index) =>
+              index < SITE.postPerIndex && <PostLink variant='h3' {...data} />,
+          )}
+        </ul>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<script is:inline define:vars={{ STORAGE_KEY_BACK_URL }}>
+  document.addEventListener('astro:page-load', () => {
+    // Always set back URL to '/' on home page
+    if (window.location.pathname === '/') {
+      sessionStorage.setItem(STORAGE_KEY_BACK_URL, '/');
+      // Dispatch custom event to notify BackButton
+      document.dispatchEvent(new CustomEvent('backUrlUpdated'));
+    }
+  });
+</script>

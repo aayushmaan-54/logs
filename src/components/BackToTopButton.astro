@@ -1,0 +1,112 @@
+---
+import { SITE } from '@/site.config';
+import { Icon } from 'astro-icon/components';
+
+const SHOW_BUTTON_SCROLL_PERCENTAGE = SITE.showScrollAtTopAt;
+---
+
+<div
+  id='btt-btn-container'
+  class:list={[
+    'fixed end-4 bottom-8 z-50',
+    'md:sticky md:end-auto md:float-end md:me-1',
+    'translate-y-14 opacity-0 transition-all duration-500 ease-in-out',
+  ]}
+>
+  <button
+    data-button='back-to-top'
+    class:list={[
+      'group relative flex items-center justify-center border border-border bg-primary px-2 py-1',
+      'size-14 cursor-pointer rounded-full',
+      'md:h-8 md:w-fit md:rounded-md md:shadow-none md:focus-visible:rounded-none',
+      'md:bg-primary/10 md:bg-clip-padding md:backdrop-blur-sm',
+    ]}
+  >
+    <span
+      id='progress-indicator'
+      class:list={[
+        'absolute inset-0 -z-10 block rounded-full bg-transparent md:hidden',
+        'scale-114 transition-transform',
+      ]}></span>
+
+    <Icon
+      name='tabler:chevron-up'
+      class='inline-block text-foreground-primary md:hidden'
+      size={'1.5rem'}
+    />
+    <span
+      class='sr-only flex items-center gap-1 text-sm group-hover:text-foreground-primary md:not-sr-only'
+    >
+      <Icon name='tabler:arrow-narrow-up' class='inline-block size-4' />
+      Back To Top
+    </span>
+  </button>
+</div>
+
+<script
+  is:inline
+  data-astro-rerun
+  define:vars={{ SHOW_BUTTON_SCROLL_PERCENTAGE }}
+>
+  function backToTop() {
+    const rootElement = document.documentElement;
+    const btnContainer = document.querySelector('#btt-btn-container');
+    const backToTopBtn = document.querySelector("[data-button='back-to-top']");
+    const progressIndicator = document.querySelector('#progress-indicator');
+
+    if (!rootElement || !btnContainer || !backToTopBtn || !progressIndicator)
+      return;
+
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    let lastVisible = null;
+    function handleScroll() {
+      const totalScrollHeight =
+        rootElement.scrollHeight - rootElement.clientHeight;
+      const totalScrolledDistance = rootElement.scrollTop;
+      const scrollPercent = Math.floor(
+        (totalScrolledDistance / totalScrollHeight) * 100,
+      );
+
+      if (window.innerWidth < 768) {
+        // To fix the "off-center" look while scaled:
+        // We use a radial gradient to create a "transparent hole" in the middle
+        // and a conic gradient behind it for the progress.
+        progressIndicator.style.background = `
+          radial-gradient(closest-side, transparent 78%, transparent 80%, transparent 100%),
+          conic-gradient(var(--foreground-primary) ${scrollPercent}%, #e2e8f000 ${scrollPercent}%)
+        `;
+
+        // Alternative: If your background is a solid color (e.g., white),
+        // change the first 'transparent 80%' to your background color to hide the inner part.
+      }
+
+      const isVisible =
+        totalScrolledDistance / totalScrollHeight >
+        SHOW_BUTTON_SCROLL_PERCENTAGE;
+
+      if (isVisible !== lastVisible) {
+        btnContainer.classList.toggle('opacity-100', isVisible);
+        btnContainer.classList.toggle('translate-y-0', isVisible);
+        btnContainer.classList.toggle('opacity-0', !isVisible);
+        btnContainer.classList.toggle('translate-y-14', !isVisible);
+        btnContainer.style.pointerEvents = isVisible ? 'auto' : 'none';
+        lastVisible = isVisible;
+      }
+    }
+
+    let ticking = false;
+    document.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+  }
+  backToTop();
+</script>

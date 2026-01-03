@@ -1,0 +1,27 @@
+---
+import { SOCIALS } from '@/site.config';
+import Link from './Link.astro';
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  centered?: boolean;
+}
+
+const { centered = false } = Astro.props;
+---
+
+<div class:list={['flex-wrap justify-center gap-1', { flex: centered }]}>
+  {
+    SOCIALS.map(social => (
+      <Link
+        href={social.href}
+        class='p-2 opacity-75 transition-opacity hover:opacity-100 sm:p-1'
+        title={social.linkTitle}
+        ariaLabel={social.linkTitle}
+      >
+        <Icon name={social.icon} size='1.2rem' />
+        <span class='sr-only'>{social.linkTitle}</span>
+      </Link>
+    ))
+  }
+</div>

@@ -1,0 +1,46 @@
+---
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  tag: string;
+  tagName: string;
+  size?: 'sm' | 'lg';
+  enableTransition?: boolean;
+}
+
+const { tag, tagName, size = 'sm', enableTransition = false } = Astro.props;
+const transitionName = enableTransition ? `tag-${tag}` : undefined;
+---
+
+<li
+  class:list={[
+    'inline-block',
+    {
+      'underline decoration-1 underline-offset-4': size === 'lg',
+    },
+  ]}
+>
+  <a
+    href={`/tags/${tag}/`}
+    class:list={[
+      'flex items-center pe-4 transition-colors duration-200',
+      'text-foreground-muted hover:text-foreground-primary focus-visible:text-foreground-primary',
+      size === 'sm' ? 'text-sm' : 'text-lg',
+    ]}
+  >
+    <Icon
+      name='tabler:hash'
+      class:list={[
+        'inline-block opacity-70 group-hover:opacity-100',
+        size === 'sm' ? '-me-0.5 size-3' : 'size-5',
+      ]}
+    />
+    {
+      transitionName ? (
+        <span transition:name={transitionName}>{tagName}</span>
+      ) : (
+        <span>{tagName}</span>
+      )
+    }
+  </a>
+</li>

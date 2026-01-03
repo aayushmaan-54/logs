@@ -1,0 +1,79 @@
+---
+import { Icon } from 'astro-icon/components';
+import { SITE } from '@/site.config';
+---
+
+{
+  SITE.showBackButton ? (
+    <a
+      id='back-button'
+      href='/'
+      class='flex w-fit items-center justify-start gap-1 px-2 text-foreground-primary/75 underline underline-offset-4 transition-colors hover:text-foreground-primary'
+    >
+      <Icon name='tabler:chevron-left' class='size-4' />
+      Go back
+    </a>
+  ) : null
+}
+
+<script>
+  import { SITE } from '@/site.config';
+
+  const STORAGE_KEY = SITE.browserStorage.backUrl;
+
+  const updateGoBackUrl = () => {
+    const backBtn: HTMLAnchorElement | null =
+      document.querySelector('#back-button');
+
+    if (!backBtn) return;
+
+    const backUrl = sessionStorage.getItem(STORAGE_KEY);
+    const currentPath = window.location.pathname;
+
+    if (backUrl) {
+      // Only update if the back URL is different from current path
+      // This prevents unnecessary navigation to the same page
+      if (backUrl !== currentPath) {
+        backBtn.href = backUrl;
+      } else {
+        // If back URL is same as current page, keep default href
+        backBtn.href = '/';
+      }
+    }
+  };
+
+  // Update on page load with a small delay to ensure storage is set
+  const handlePageLoad = () => {
+    // Use requestAnimationFrame to ensure DOM is ready and other scripts have run
+    requestAnimationFrame(() => {
+      updateGoBackUrl();
+      // Also check again after a brief delay as a fallback
+      setTimeout(updateGoBackUrl, 10);
+    });
+  };
+
+  // Listen for storage changes (in case it's set after initial load)
+  const handleStorageChange = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY && e.newValue) {
+      updateGoBackUrl();
+    }
+  };
+
+  // Listen for custom storage events (for same-tab updates)
+  const handleCustomStorageChange = () => {
+    updateGoBackUrl();
+  };
+
+  document.addEventListener('astro:page-load', handlePageLoad);
+  window.addEventListener('storage', handleStorageChange);
+
+  // Listen for custom events that might be dispatched when storage is set
+  document.addEventListener('backUrlUpdated', handleCustomStorageChange);
+
+  // Initial check with delay
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', handlePageLoad);
+  } else {
+    handlePageLoad();
+  }
+</script>

@@ -1,0 +1,49 @@
+---
+import { SITE } from '@/site.config';
+
+const navLinks = [
+  { href: '/', label: 'Home', canShow: true },
+  { href: '/posts', label: 'Blog', canShow: true },
+  { href: '/short-reads', label: 'Short Reads', canShow: SITE.showShortReads },
+  { href: '/tags', label: 'Tags', canShow: true },
+  { href: '/archives', label: 'Archives', canShow: SITE.showArchives },
+  { href: '/search', label: 'Search', canShow: true },
+  { href: '/about', label: 'About', canShow: true },
+  { href: '/subscribe', label: 'Subscribe', canShow: true },
+];
+
+const { pathname } = Astro.url;
+const currentPath =
+  pathname.length > 1 && pathname.endsWith('/')
+    ? pathname.slice(0, -1)
+    : pathname;
+
+const isActive = (path: string) => {
+  if (currentPath === path) return true;
+  return path !== '/' && currentPath.startsWith(path);
+};
+---
+
+<nav class='pt-8 pb-16 text-sm'>
+  <ul class='flex flex-wrap gap-x-6 gap-y-1'>
+    {
+      navLinks
+        .filter(link => link.canShow)
+        .map(link => (
+          <li class='group flex items-center justify-between'>
+            <a
+              href={link.href}
+              class:list={[
+                'flex w-full items-center justify-between text-foreground-muted underline decoration-1 underline-offset-4 transition-colors group-hover:text-foreground-primary',
+                isActive(link.href) && 'text-foreground-primary',
+              ]}
+              aria-label={link.label}
+              title={link.label}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+    }
+  </ul>
+</nav>

@@ -1,0 +1,65 @@
+@import 'tailwindcss';
+@import './typography.css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --primary: #f2f2f0;
+  --secondary: #ffffff;
+  --border: #e0e0e0;
+  --foreground-primary: #1f2227;
+  --foreground-secondary: #343b45;
+  --foreground-muted: #6b7280;
+  --error: #a1334b;
+  --success: #33a147;
+}
+
+.dark {
+  --primary: #08090b;
+  --secondary: #111317;
+  --border: #1f2430;
+  --foreground-primary: #e5e4e3;
+  --foreground-secondary: #a7aebb;
+  --foreground-muted: #7b8190;
+  --error: #c73a58;
+  --success: #3fc457;
+}
+
+@theme {
+  --font-sans: 'Source Serif 4', 'Georgia', serif;
+  --font-mono: 'JetBrains Mono', 'Geist Mono', monospace;
+
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-border: var(--border);
+  --color-foreground-primary: var(--foreground-primary);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-error: var(--error);
+  --color-success: var(--success);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-primary font-sans text-foreground-primary;
+  }
+}
+
+::selection {
+  @apply bg-foreground-muted/25;
+}
+
+@utility max-w-app {
+  @apply max-w-2xl;
+}
+
+@utility w-app {
+  @apply w-2xl;
+}
+
+:target {
+  scroll-margin-block: 1rem;
+}
